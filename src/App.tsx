@@ -4,6 +4,7 @@ import './App.css'
 
 function App() {
   const [inputValue, setInputValue] = useState('')
+  const [videos, setVideos] = useState([])
 
   const submitRequest = () => {
     fetchVideos(inputValue)
@@ -22,11 +23,22 @@ function App() {
           }
         }
       )
-      console.log(response.data)
-      return response.data.items
+
+      const videosWithTimecodes = response.data.items.filter((video: any) =>
+        hasTimecodes(video.snippet.description)
+      )
+
+      setVideos(videosWithTimecodes)
+      console.log(response)
     } catch (error) {
-      return []
+      console.error('Error fetching videos:', error)
+      setVideos([])
     }
+  }
+
+  const hasTimecodes = (description: string) => {
+    const timecodePattern = /\d{1,2}:\d{2}/
+    return timecodePattern.test(description)
   }
 
   return (
@@ -42,7 +54,7 @@ function App() {
       <div>
         <input
           type="text"
-          placeholder="enter your request here"
+          placeholder="Enter your request here"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           style={{ padding: '10px' }}
@@ -50,6 +62,16 @@ function App() {
         <button style={{ padding: '10px' }} onClick={submitRequest}>
           Search your request
         </button>
+        {videos.length > 0 && (
+          <div>
+            <h2>Видео с таймкодами:</h2>
+            <ul>
+              {videos.map((video: any) => (
+                <li key={video.id.videoId}>{video.snippet.title}</li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
     </div>
   )
